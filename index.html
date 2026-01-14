@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagraph</title>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+  background: #000;
+  color: #fff;
+}
+
+.header {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 22px;
+  border-bottom: 1px solid #222;
+  background: #000;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.profile, .post-view {
+  padding: 14px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 77px;
+  height: 77px;
+  border-radius: 50%;
+  background: url("avatar.jpg") center/cover;
+  margin-right: 18px;
+}
+
+.stats {
+  display: flex;
+  flex: 1;
+  justify-content: space-around;
+}
+
+.stat { text-align: center; font-size: 14px; }
+.stat b { font-size: 16px; }
+
+.name { margin-top: 8px; font-weight: 600; }
+.bio { font-size: 14px; color: #ccc; }
+
+.button {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #0095f6;
+  color: white;
+  font-weight: 600;
+}
+
+.locked {
+  text-align: center;
+  margin-top: 40px;
+  color: #aaa;
+  font-size: 15px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 10px;
+}
+
+.post img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; cursor: pointer; }
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
+  background: #000;
+  border-top: 1px solid #222;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.nav-btn {
+  color: #ccc;
+  font-size: 24px;
+  cursor: pointer;
+}
+.nav-btn.active { color: white; }
+
+.post-view img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Instagraph</div>
+
+<div id="profileScreen">
+  <div class="profile">
+    <div class="top">
+      <div class="avatar"></div>
+      <div class="stats">
+        <div class="stat"><b id="postsCount">0</b><br>публикации</div>
+        <div class="stat"><b>72</b><br>подписчики</div>
+        <div class="stat"><b>31</b><br>подписки</div>
+      </div>
+    </div>
+    <div class="name">ALISHER.DZ</div>
+    <div class="bio">alish</div>
+
+    <button class="button" onclick="uploadPost()">Добавить публикацию</button>
+    <div class="locked" id="lockedText">🔒 Это закрытый аккаунт</div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<div id="postScreen" class="post-view" style="display:none;"></div>
+
+<input type="file" id="fileInput" accept="image/*" hidden>
+
+<div class="bottom-nav">
+  <div class="nav-btn active" onclick="showProfile()">🏠</div>
+  <div class="nav-btn" onclick="showPostView()">📷</div>
+</div>
+
+<script>
+let posts = [];
+
+function uploadPost() {
+  document.getElementById("fileInput").click();
+}
+
+document.getElementById("fileInput").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const grid = document.getElementById("grid");
+    const postData = reader.result;
+    posts.unshift(postData);
+
+    const postDiv = document.createElement("div");
+    postDiv.className = "post";
+    postDiv.innerHTML = `<img src="${postData}" onclick="openPost('${postData}')">`;
+    grid.prepend(postDiv);
+
+    let c = document.getElementById("postsCount");
+    c.textContent = posts.length;
+
+    document.getElementById("lockedText").style.display = "none";
+  };
+  reader.readAsDataURL(file);
+});
+
+function openPost(src) {
+  document.getElementById("profileScreen").style.display = "none";
+  const postScreen = document.getElementById("postScreen");
+  postScreen.style.display = "block";
+  postScreen.innerHTML = `<img src="${src}">`;
+  activateNav(false);
+}
+
+function showProfile() {
+  document.getElementById("profileScreen").style.display = "block";
+  document.getElementById("postScreen").style.display = "none";
+  activateNav(true);
+}
+
+function showPostView() {
+  document.getElementById("profileScreen").style.display = "none";
+  document.getElementById("postScreen").style.display = "block";
+  document.getElementById("postScreen").innerHTML = posts.length ? `<img src="${posts[0]}">` : "<p style='text-align:center;margin-top:20px;color:#aaa'>Нет постов</p>";
+  activateNav(false);
+}
+
+function activateNav(home) {
+  document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
+  if(home) document.querySelector(".bottom-nav .nav-btn:first-child").classList.add("active");
+}
+</script>
+
+</body>
+</html>
